@@ -53,7 +53,7 @@ button { cursor: pointer; border: 0; border-radius: 8px; }
   .rooms { padding: .8rem; gap: .6rem; }
   .rooms nav { display: flex; overflow-x: auto; }
   .room { white-space: nowrap; }
-  .addroom, .me { display: none; }
+  .addroom, .me { display: flex; }
   .users { display: none; }
   .msg { max-width: 88%; }
 }
