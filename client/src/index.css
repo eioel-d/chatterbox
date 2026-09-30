@@ -1,0 +1,60 @@
+:root { --ink:#17263a; --ink2:#22364f; --paper:#eef2f1; --card:#fff; --teal:#0f8b8d; --teal-d:#0b6e70; --amber:#f2b134; --mut:#6b7a8a; --line:#d9e1e0; }
+* { box-sizing: border-box; margin: 0; }
+html, body, #root { height: 100%; }
+body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; background: var(--paper); color: var(--ink); }
+button, input { font: inherit; }
+input { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); min-width: 0; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+button { cursor: pointer; border: 0; border-radius: 8px; }
+.primary { background: var(--teal); color: #fff; padding: .7rem 1.1rem; font-weight: 700; }
+.primary:hover { background: var(--teal-d); }
+.link { background: none; color: var(--teal); padding: .3rem; text-decoration: underline; }
+
+.auth { min-height: 100%; display: grid; place-items: center; background: var(--ink); padding: 1rem; }
+.auth form { background: var(--card); padding: 2rem; border-radius: 14px; width: min(400px, 100%); display: grid; gap: .8rem; }
+.auth h1 { font-size: 2rem; letter-spacing: -.02em; }
+.auth p { color: var(--mut); }
+.err { color: #b3261e; font-size: .95rem; }
+
+.app { height: 100%; display: grid; grid-template-columns: 250px 1fr; }
+.rooms { background: var(--ink); color: #e8eef5; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; min-height: 0; }
+.rooms h2 { font-size: 1.3rem; }
+.rooms nav { display: grid; gap: .25rem; overflow-y: auto; flex: 1; align-content: start; }
+.room { background: none; color: #b8c6d6; text-align: left; padding: .55rem .7rem; }
+.room:hover { background: var(--ink2); }
+.room.active { background: var(--ink2); color: #fff; box-shadow: inset 3px 0 var(--amber); }
+.addroom { display: flex; gap: .4rem; }
+.addroom input { flex: 1; padding: .55rem; background: var(--ink2); border-color: var(--ink2); color: #fff; }
+.addroom .primary { padding: .55rem .8rem; }
+.me { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--ink2); padding-top: .8rem; }
+.me .link { color: #b8c6d6; }
+
+.chat { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.chat header { display: flex; justify-content: space-between; align-items: baseline; padding: 1rem 1.4rem; background: var(--card); border-bottom: 1px solid var(--line); }
+.count { color: var(--mut); font-size: .9rem; }
+.body { flex: 1; display: flex; min-height: 0; }
+.msgs { flex: 1; overflow-y: auto; padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: .6rem; }
+.empty { color: var(--mut); margin: auto; }
+.msg { align-self: flex-start; max-width: min(70%, 520px); background: var(--card); padding: .55rem .85rem; border-radius: 12px 12px 12px 3px; border: 1px solid var(--line); }
+.msg b { font-size: .85rem; color: var(--teal-d); }
+.msg p { overflow-wrap: anywhere; }
+.msg time { font-size: .72rem; color: var(--mut); }
+.msg.mine { align-self: flex-end; background: var(--teal); color: #fff; border-color: var(--teal); border-radius: 12px 12px 3px 12px; }
+.msg.mine time { color: #d3f0f0; }
+.users { list-style: none; padding: 1.2rem 1rem; width: 160px; border-left: 1px solid var(--line); background: var(--card); overflow-y: auto; }
+.users li { padding: .25rem 0 .25rem 1rem; position: relative; }
+.users li::before { content: ''; position: absolute; left: 0; top: .7rem; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+.typing { height: 1.4rem; padding: 0 1.4rem; color: var(--mut); font-size: .9rem; }
+.composer { display: flex; gap: .6rem; padding: .8rem 1.4rem 1.2rem; }
+.composer input { flex: 1; }
+
+@media (max-width: 720px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .rooms { padding: .8rem; gap: .6rem; }
+  .rooms nav { display: flex; overflow-x: auto; }
+  .room { white-space: nowrap; }
+  .addroom, .me { display: none; }
+  .users { display: none; }
+  .msg { max-width: 88%; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
