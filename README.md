@@ -60,3 +60,4 @@ Private rooms, direct messages, image sharing, unread badges, rate limiting.
 - **Unread badges and sound:** per-room counters, a short ping, tab-title count, and a mute toggle
 - New public rooms appear live for everyone
 - **Edit and delete messages:** hover (or tap on mobile) your own message to edit or delete it; changes appear instantly for everyone in the room, and edited messages are marked
+- **Rename and delete rooms:** the creator of a room sees ✏️ and 🗑️ in the chat header; renames update live for everyone, and deleting a room also removes its messages. The three default rooms (created by the system) can't be renamed or deleted.

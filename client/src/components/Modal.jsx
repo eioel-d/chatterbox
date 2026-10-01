@@ -5,13 +5,15 @@ const MODES = {
     fields: [['name', 'Room name', 'text'], ['password', 'Password (optional)', 'password']] },
   join: { title: 'Join a private room', hint: 'Enter the room name and the password you were given.', cta: 'Join',
     fields: [['name', 'Room name', 'text'], ['password', 'Password', 'password']] },
+  rename: { title: 'Rename room', hint: 'Everyone in the room will see the new name.', cta: 'Save',
+    fields: [['name', 'New room name', 'text']] },
   dm: { title: 'New direct message', hint: 'Chat 1-to-1 with another user.', cta: 'Start chat',
     fields: [['username', 'Their username', 'text']] },
 };
 
-export default function Modal({ mode, onClose, onSubmit }) {
+export default function Modal({ mode, initial, onClose, onSubmit }) {
   const cfg = MODES[mode];
-  const [vals, setVals] = useState({});
+  const [vals, setVals] = useState(initial || {});
   const [err, setErr] = useState('');
 
   const submit = async (e) => {

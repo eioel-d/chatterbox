@@ -14,11 +14,13 @@ export default function ChatView({ session, onLogout }) {
   const [modal, setModal] = useState(null);
   const others = chat.typing.filter((u) => u !== username);
   const label = roomLabel(chat.room, username);
+  const owner = chat.room && !chat.room.isDM && chat.room.createdBy === username;
   const icon = chat.room?.isDM ? '✉️' : chat.room?.isPrivate ? '🔒' : '#';
 
   const submit = (v) =>
     modal === 'create' ? chat.addRoom(v.name, v.password)
     : modal === 'join' ? chat.joinPrivate(v.name, v.password)
+    : modal === 'rename' ? chat.renameRoom(chat.room._id, v.name)
     : chat.startDM(v.username);
 
   return (
@@ -29,12 +31,21 @@ export default function ChatView({ session, onLogout }) {
         <header>
           <h3>{icon} {label}</h3>
           <span className="pill">{chat.users.length} online</span>
+          {owner && (
+            <>
+              <button className="iconbtn" title="Rename room" onClick={() => setModal('rename')}>✏️</button>
+              <button className="iconbtn" title="Delete room"
+                onClick={() => window.confirm(`Delete #${chat.room.name} and all its messages? This cannot be undone.`)
+                  && chat.deleteRoom(chat.room._id).catch((e) => alert(e.message))}>🗑️</button>
+            </>
+          )}
           <button className="iconbtn" onClick={chat.toggleMute} title={chat.muted ? 'Sound off' : 'Sound on'}>
             {chat.muted ? '🔕' : '🔔'}
           </button>
           <Avatar name={username} small />
           <button className="iconbtn" onClick={onLogout} title="Log out">🚪</button>
         </header>
+        {chat.notice && <div className="notice">{chat.notice}</div>}
         <div className="body">
           <MessageList msgs={chat.msgs} username={username} onEdit={chat.editMessage} onDelete={chat.deleteMessage} />
           <UserList users={chat.users} me={username} onPick={(u) => chat.startDM(u).catch((e) => alert(e.message))} />
@@ -44,7 +55,7 @@ export default function ChatView({ session, onLogout }) {
         </div>
         <Composer roomName={label} onSend={chat.send} onTyping={chat.notifyTyping} />
       </section>
-      {modal && <Modal mode={modal} onClose={() => setModal(null)} onSubmit={submit} />}
+      {modal && <Modal mode={modal} initial={modal === 'rename' ? { name: chat.room.name } : undefined} onClose={() => setModal(null)} onSubmit={submit} />}
     </div>
   );
 }

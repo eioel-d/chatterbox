@@ -10,6 +10,7 @@ export default function useChat({ token, username }, onLogout) {
   const [users, setUsers] = useState([]);
   const [typing, setTyping] = useState([]);
   const [unread, setUnread] = useState({});
+  const [notice, setNotice] = useState('');
   const [muted, setMuted] = useState(() => localStorage.getItem('muted') === '1');
   const socket = useRef();
   const timer = useRef();
@@ -23,6 +24,18 @@ export default function useChat({ token, username }, onLogout) {
   };
   const refreshRooms = () => api('/rooms', {}, token).then((r) => { setRooms(r); watch(r); return r; });
 
+  const flash = (text) => { setNotice(text); setTimeout(() => setNotice(''), 4000); };
+  const applyUpdate = (r) => {
+    setRooms((p) => p.map((x) => (x._id === r._id ? r : x)));
+    setRoom((cur) => (cur?._id === r._id ? r : cur));
+  };
+  const applyDelete = (id) => {
+    const { room, rooms } = live.current;
+    if (room?._id === id) flash(`The room #${room.name} was deleted`);
+    setRooms((p) => p.filter((x) => x._id !== id));
+    setRoom((cur) => (cur?._id === id ? rooms.find((x) => x._id !== id && !x.isDM) || null : cur));
+  };
+
   useEffect(() => {
     const s = io(API, { auth: { token } });
     socket.current = s;
@@ -33,6 +46,8 @@ export default function useChat({ token, username }, onLogout) {
     s.on('roomCreated', (r) => addRooms([r]));
     s.on('messageEdited', (m) => setMsgs((p) => p.map((x) => (x._id === m._id ? m : x))));
     s.on('messageDeleted', (id) => setMsgs((p) => p.filter((x) => x._id !== id)));
+    s.on('roomUpdated', applyUpdate);
+    s.on('roomDeleted', ({ id }) => applyDelete(id));
     s.on('notify', (n) => {
       if (n.sender === username) return;
       const { rooms, room, muted } = live.current;
@@ -47,13 +62,13 @@ export default function useChat({ token, username }, onLogout) {
   }, []);
 
   useEffect(() => {
-    if (!room) return;
+    if (!room) { setMsgs([]); return; }
     setTyping([]);
     setMsgs([]);
     setUnread((p) => ({ ...p, [room._id]: 0 }));
     api(`/rooms/${room._id}/messages`, {}, token).then(setMsgs).catch(() => {});
     socket.current.emit('joinRoom', room._id);
-  }, [room]);
+  }, [room?._id]); // renaming a room must not reload its history
 
   useEffect(() => {
     const clear = () => {
@@ -92,5 +107,8 @@ export default function useChat({ token, username }, onLogout) {
     startDM: (username) => open('/rooms/dm', { username }),
     editMessage: (id, text) => socket.current.emit('editMessage', { id, text }),
     deleteMessage: (id) => socket.current.emit('deleteMessage', id),
+    notice,
+    renameRoom: (id, name) => api(`/rooms/${id}`, { method: 'PATCH', body: { name } }, token).then(applyUpdate),
+    deleteRoom: (id) => api(`/rooms/${id}`, { method: 'DELETE' }, token).then(() => applyDelete(id)),
   };
 }

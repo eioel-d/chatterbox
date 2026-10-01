@@ -7,6 +7,16 @@ import { accessFilter, publicRoom } from '../utils/access.js';
 import { getIO } from '../sockets/io.js';
 
 const clean = (s) => (s || '').trim().toLowerCase().replace(/\s+/g, '-');
+const nameError = (name) => (!name ? 'Room name required'
+  : name.length > 24 || name.includes(':') ? 'Name must be 24 characters or fewer, without ":"' : null);
+const isOwner = (room, req) => room.createdBy === req.user.username && !room.isDM;
+
+// Public rooms are announced to everyone; private rooms only to their members.
+const announce = (room, event, payload) => {
+  const io = getIO();
+  if (!room.isPrivate) io?.emit(event, payload);
+  else if (room.members.length) io?.to(room.members.map((m) => `u:${m}`)).emit(event, payload);
+};
 
 export const listRooms = asyncHandler(async (req, res) => {
   const rooms = await Room.find(accessFilter(req.user.username)).sort('name');
@@ -16,8 +26,8 @@ export const listRooms = asyncHandler(async (req, res) => {
 export const createRoom = asyncHandler(async (req, res) => {
   const name = clean(req.body.name);
   const password = req.body.password || '';
-  if (!name) return res.status(400).json({ error: 'Room name required' });
-  if (name.length > 24 || name.includes(':')) return res.status(400).json({ error: 'Name must be 24 characters or fewer, without ":"' });
+  const bad = nameError(name);
+  if (bad) return res.status(400).json({ error: bad });
   if (password && password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
   if (await Room.findOne({ name })) return res.status(409).json({ error: 'That room already exists' });
   const room = await Room.create({
@@ -55,4 +65,29 @@ export const getMessages = asyncHandler(async (req, res) => {
   if (!room) return res.status(403).json({ error: 'You do not have access to this room' });
   const msgs = await Message.find({ room: room._id }).sort('-createdAt').limit(100);
   res.json(msgs.reverse());
+});
+
+export const renameRoom = asyncHandler(async (req, res) => {
+  const room = await Room.findById(req.params.id);
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+  if (!isOwner(room, req)) return res.status(403).json({ error: 'Only the room creator can do that' });
+  const name = clean(req.body.name);
+  const bad = nameError(name);
+  if (bad) return res.status(400).json({ error: bad });
+  if (name !== room.name && (await Room.findOne({ name }))) return res.status(409).json({ error: 'That room already exists' });
+  room.name = name;
+  await room.save();
+  const out = publicRoom(room);
+  announce(room, 'roomUpdated', out);
+  res.json(out);
+});
+
+export const deleteRoom = asyncHandler(async (req, res) => {
+  const room = await Room.findById(req.params.id);
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+  if (!isOwner(room, req)) return res.status(403).json({ error: 'Only the room creator can do that' });
+  await Message.deleteMany({ room: room._id });
+  await room.deleteOne();
+  announce(room, 'roomDeleted', { id: String(room._id) });
+  res.json({ ok: true });
 });

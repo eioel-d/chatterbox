@@ -48,6 +48,7 @@ export function registerChatHandlers(io, socket) {
   socket.on('sendMessage', async ({ roomId, text }) => {
     if (!text?.trim() || socket.roomId !== roomId) return;
     try {
+      if (!(await Room.exists({ _id: roomId }))) return;
       const msg = await Message.create({ room: roomId, sender: username, text: text.trim() });
       io.to(roomId).emit('newMessage', msg);
       const note = { roomId, sender: username, text: msg.text.slice(0, 60) };
