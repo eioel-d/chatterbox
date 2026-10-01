@@ -52,3 +52,11 @@ Server → client: `newMessage`, `roomUsers`, `typing`, `stopTyping`
 
 ## Future work
 Private rooms, direct messages, image sharing, unread badges, rate limiting.
+
+## New in this version
+- Colorful, playful UI with per-user avatar colors
+- **Direct messages:** click a name in the online list or use the DM button
+- **Private rooms:** create a room with a password; others join with "Join" (name + password) and it then appears in their list
+- **Unread badges and sound:** per-room counters, a short ping, tab-title count, and a mute toggle
+- New public rooms appear live for everyone
+- **Edit and delete messages:** hover (or tap on mobile) your own message to edit or delete it; changes appear instantly for everyone in the room, and edited messages are marked

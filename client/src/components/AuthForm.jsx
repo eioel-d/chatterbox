@@ -17,6 +17,7 @@ export default function AuthForm({ onAuth }) {
   return (
     <main className="auth">
       <form onSubmit={submit}>
+        <div className="logo">💬</div>
         <h1>Chatterbox</h1>
         <p>Pick a room, say something, see it land instantly.</p>
         <input placeholder="Username" value={form.username} onChange={set('username')} autoFocus />
